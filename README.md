@@ -55,17 +55,13 @@ DATA_ROOT_DIR/
 
 ## Training and evaluation of SurvFinder
 
-### Training
+### Training MVNet
 ```
-python train.py --TrainFolder './trainfolder' --NumEpoch 100 --Model resnet50 --Loss 'cross' --LearningRate '0.005' --BatchSize 128 --WeightDecay '0.0005' --Seed 0 --DeviceId '0,1' --FoldN 1
+python main_modify_1.py
 ```
 
 The trained checkpoints are saved in /ckpt, 5 files derived from 5-fold cross validation.
 
-### Evaluation
-Variate files for evaluation of single fold, ensemble 5 folds for multicenter datasets and proof-of concept dataset are available. Here is an instance for ensembled multicenter dataset evaluation.
-```
-python test_multicenter_ensemble.py --ModelPath './Model' --DataPath './multicenter1' --ResultPath './result' --DeviceId '0,1' --Model resnet50
-```
+
 
 
