@@ -1,6 +1,6 @@
-# LGNet
+# SurvFinder
 
-The source code of article 'Deep learning-based intraoperative differentiation of primary CNS lymphoma and glioma: a discovery, multicenter validation, and proof-of concept study'.
+The source code of article 'Multiview deep-learning-enabled histopathology for risk stratification and treatment decision-making in stage II colorectal cancer'.
 
 ## System requirements
 This code was developed and tested in the following settings. 
@@ -26,7 +26,7 @@ apt-get install openslide-python
 ```
 - Create a conda environment with lgnet.yaml:
 ```
-conda env create -f lgnet.yaml
+conda env create -f sfinder.yaml
 ```  
 - Activate the environment:
 ```
@@ -35,7 +35,7 @@ conda activate env1
 - Typical installation time: 1 hour
 
 ## Preprocessing
-We use the python files to convert the WSI to patches with size 515*512 pixels and taking color normalization for comparison.
+We use the python files to convert the WSI to patches with size 256*256 pixels and taking color normalization for comparison.
 ### Slide directory structure
 ```
 DATA_ROOT_DIR/
@@ -53,7 +53,7 @@ DATA_ROOT_DIR/
 - /preprocessing/StainTools-master/main_staintools.py
 - /preprocessing/Vahadane/main.py
 
-## Training and evaluation of LGNet
+## Training and evaluation of SurvFinder
 
 ### Training
 ```
@@ -67,10 +67,5 @@ Variate files for evaluation of single fold, ensemble 5 folds for multicenter da
 ```
 python test_multicenter_ensemble.py --ModelPath './Model' --DataPath './multicenter1' --ResultPath './result' --DeviceId '0,1' --Model resnet50
 ```
-## Fusion Strategy
-LGNet prediction results and pathologist confidence data used in the article are shown in /fusion_data.
-Notebook is used to design fusion strategy. 2 files are for proof-of concept dataset and multicenter datasets, respectively.
 
-- fusion_poc.ipynb
-- fusion_multicenter.ipynb
 
