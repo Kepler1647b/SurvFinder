@@ -30,7 +30,7 @@ conda env create -f sfinder.yaml
 ```  
 - Activate the environment:
 ```
-conda activate env1
+conda activate sfinder
 ```
 - Typical installation time: 1 hour
 
