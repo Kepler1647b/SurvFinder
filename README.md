@@ -39,10 +39,10 @@ We use the python files to convert the WSI to patches with size 256*256 pixels a
 ### Slide directory structure
 ```
 DATA_ROOT_DIR/
-    └──glioma/
+    └──case_id/
         ├── slide_id.svs
         └── ...
-    └──lymphoma/
+    └──case_id/
         ├── slide_id.svs
         └── ...
     ...
