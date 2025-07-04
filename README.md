@@ -51,13 +51,16 @@ DATA_ROOT_DIR/
 - /preprocessing/generate_patch.py
 ### Color normalization methods
 - /preprocessing/StainTools-master/main_staintools.py
-- /preprocessing/Vahadane/main.py
-
 ## Training and evaluation of SurvFinder
 
-### Training MVNet
+### Training and evaluation of MVNet
+Training
 ```
-python main_modify_1.py
+python /ntl/train_ntl.py --Task 'lym' --TrainFolder "/train_folder"  --Comment 'comment' --Pretrain --FoldN  --BatchSize  --Epoch  --Resume 0 --Stat 'train'
+```
+Evaluation
+```
+python /ntl/train_ntl.py --Task 'lym' --TrainFolder "/test_folder"  --Comment 'comment'  --FoldN  --BatchSize  --Epoch  --Resume 0 --Stat 'test'
 ```
 
 The trained checkpoints are saved in /ckpt, 5 files derived from 5-fold cross validation.

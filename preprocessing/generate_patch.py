@@ -387,7 +387,7 @@ if __name__ == '__main__':
         slidepath = args[0]
     except IndexError:
         parser.error('Missing slide argument')
-    for classes in ['glioma', 'lymphoma']:
+    for classes in os.listdir('/cass_path'):
             
         slides = glob.glob(os.path.join(slidepath, classes, '*.svs'))
 
