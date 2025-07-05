@@ -33,7 +33,6 @@ class DataLoaderX(DataLoader):
 
 def get_val_csv(modellist, dataloaders, phase, criterion, optimizer):
     print('start val csv')
-    #model.eval()
     running_loss = 0.0
 
     all_labels = np.array([])
@@ -48,7 +47,6 @@ def get_val_csv(modellist, dataloaders, phase, criterion, optimizer):
         optimizer.zero_grad()
 
         with torch.torch.set_grad_enabled(phase == 'train'):
-            #for model in modellist:
             tot_outputs = []
             for model in modellist:
                 output = model(inputs)
@@ -56,14 +54,11 @@ def get_val_csv(modellist, dataloaders, phase, criterion, optimizer):
                 tot_outputs.append(output)
                 print(output)
                 print(tot_outputs)
-                #print(tot_outputs.shape)
             print(torch.stack(tot_outputs))
             print(torch.stack(tot_outputs).shape)
             outputs = torch.mean(torch.stack(tot_outputs), dim=0)
             print(outputs)
-            #outputs = model(inputs)
             _, preds = torch.max(outputs, 1)
-            #value = F.softmax(outputs, dim=1)
             value = outputs
             _loss = criterion(outputs, labels)
             
@@ -77,10 +72,7 @@ def get_val_csv(modellist, dataloaders, phase, criterion, optimizer):
 
         all_labels = np.concatenate((all_labels, labels.cpu().numpy()))
         all_predicts = np.concatenate((all_predicts, preds.cpu().numpy()))
-        #all_pos += pos
         all_path += path
-        #print(value.shape, all_values.shape)
-        #print(i)
             
         if i == 0:
             all_values = value.detach().cpu().numpy()
@@ -96,9 +88,6 @@ def get_val_csv(modellist, dataloaders, phase, criterion, optimizer):
         all_vl_1.extend(list(v[:,0]))
         all_vl_2.extend(list(v[:,1]))
         all_vl_3.extend(list(v[:,2]))
-
-    
-    # print('all_labels:', all_labels)
 
     aucdic, fprdic, tprdic = utils.multi_auc(onehot_labels, all_values)
     eer_dic = utils.eer_threshold(onehot_labels, all_values)
@@ -145,11 +134,6 @@ def get_val_csv(modellist, dataloaders, phase, criterion, optimizer):
     slide_name = np.array(slide_name)
     type_name = np.array(type_name)
     bag_name = np.array(bag_name)
-    #all_pos = np.array(all_pos)
-    # save to csv
-    #print(all_vl_1)
-    #print(all_path)
-    #csv_dict = {"slide_name": slide_name,  "bag_name": bag_name, 'type_name': type_name, 'labels': all_labels, "predictions": all_predicts.astype(int), 'value0': all_vl_1, 'value1': all_vl_2, 'value2': all_vl_3}
     csv_dict = {"slide_name": type_name,  "bag_name": bag_name, "predictions": all_predicts.astype(int), 'value0': all_vl_1, 'value1': all_vl_2, 'value2': all_vl_3}
     df = pd.DataFrame(csv_dict)
     return df
@@ -166,8 +150,6 @@ def run(model, dataloaders, phase, criterion, optimizer):
 
     all_labels = np.array([])
     all_predicts = np.array([])
-    #all_values = np.array([[]])
-    #onehot_labels = np.array([[]])
 
     for i, (inputs, labels, pos) in tqdm(enumerate(dataloaders)):
 
@@ -190,8 +172,6 @@ def run(model, dataloaders, phase, criterion, optimizer):
 
         all_labels = np.concatenate((all_labels, labels.cpu().numpy()))
         all_predicts = np.concatenate((all_predicts, preds.cpu().numpy()))
-        #print(value.shape, all_values.shape)
-        #print(i)
         if i == 0:
             all_values = value.detach().cpu().numpy()
             onehot_labels = utils.one_hot(labels.cpu().numpy())
@@ -204,14 +184,12 @@ def run(model, dataloaders, phase, criterion, optimizer):
     aucdic, fprdic, tprdic = utils.multi_auc(onehot_labels, all_values)
     eer_dic = utils.eer_threshold(onehot_labels, all_values)
     mAP = utils.compute_mAP(onehot_labels, onehot_preds)
-    # print train/valid diagnostics
     Loss = running_loss / (len(all_labels))
     Acc = (all_labels == all_predicts).sum() / len(all_predicts)
     lympho_acc = ((all_predicts == 0) & (all_labels == 0)).sum() / (all_labels == 0).sum()
     normal_acc = ((all_predicts == 1) & (all_labels == 1)).sum() / (all_labels == 1).sum()
     tumor_acc = ((all_predicts == 2) & (all_labels == 2)).sum() / (all_labels == 2).sum()
     print('label_sum:', (all_labels == 0).sum(), (all_labels == 1).sum(), (all_labels == 2).sum())
-    #print('auc:', aucdic)
 
     Writer.add_scalar('%s/Loss' % phase.capitalize(), Loss, global_epoch)  #
     Writer.add_scalar('%s/Acc' % phase.capitalize(), Acc, global_epoch)  #
@@ -266,23 +244,18 @@ def start_train(train_loader, valid_loader, test_loader, modellist, device, crit
     elif stat == 'test':
         df = get_val_csv(modellist, test_loader, 'test', criterion, optimizer)
         print('getting val csv')
-        #savepath = '/home/21/zihan/Storage/lympho/predictcsv_r18_inner_all_processed'
-        #savepath = '/home/21/zihan/Storage/lympho/lympho_analysis/csv_lym3/liuyuan'
-        savepath = '/home/21/zihan/Storage/lympho/lympho_analysis/csv_lym3_20/TCGA_tissue'   
-        #savepath = '/home/21/zihan/Storage/lympho/results_final/lym3'  
+        savepath = '/csvpath'   
         for slidename in list(set(df['slide_name'].tolist())):
             if not os.path.exists(os.path.join(savepath, slidename[:12])):
                 os.makedirs(os.path.join(savepath, slidename[:12]))
             df_slide = df[(df['slide_name'] == slidename)]
             df_slide.to_csv(os.path.join(savepath, slidename[:12], slidename + '_predict_lym3.csv'))
-        #df.to_csv('/home/21/zihan/Storage/lympho/results_final/lym3/inner_result_fold%s.csv' % args.foldn)
 
 def prepare_data(dataset_path, task, batch_size, stat):
     train_loader, valid_loader, test_loader = '','',''
     if stat == 'train':
         train_dataset = ZSData(os.path.join(dataset_path, "train"), task, transforms=utils.transform_train_lym3, transforms_512 = utils.transform_train_512, bi=True, padding=0)
         valid_dataset = ZSData(os.path.join(dataset_path, "test"), task, transforms=utils.transform_valid_lym3, transforms_512 = utils.transform_valid_512, bi=True, padding=0)
-        #train_batch_sampler = utils.BalancedBatchSampler(train_dataset.train_labels.numpy(), n_classes = 3, n_samplers = int(batch_size/3), batchsize = batch_size)
         label_list_train = train_dataset.get_label_list()
         label_list_valid = valid_dataset.get_label_list()
         class_idxs = train_dataset.get_index_dic()
@@ -296,7 +269,6 @@ def prepare_data(dataset_path, task, batch_size, stat):
         print('train_data', label_list_train.count(0), label_list_train.count(1), label_list_train.count(2))
         print('valid_data', label_list_valid.count(0), label_list_valid.count(1), label_list_valid.count(2))
         weights, weight_per_class = utils.make_weights_for_balanced_classes(train_dataset.get_label_list(), nclasses=3)
-        #train_loader = DataLoader(train_dataset, shuffle=True, batch_size=batch_size, num_workers=4, pin_memory=False)
         train_loader = DataLoaderX(train_dataset, batch_sampler = batch_sampler, num_workers=8, pin_memory=False)
         valid_loader = DataLoaderX(valid_dataset, shuffle=True, batch_size=batch_size, num_workers=8, pin_memory=False)
     elif stat == 'test':
@@ -359,14 +331,13 @@ if __name__ == '__main__':
         
     print('\n### Build model %s' % args.model)
     
-    #model = create_model(args.model, args.pretrain)
     modellist = []
     if args.stat == 'test':
-        ptpathlist = ['/data15/data15_5/dexia/code_ctrans_ntl/checkpoints/cls3_newlabel1128/2023_12_04_BS8,,epochs200,optimSGD,seed0_cosLR1e-6/fold1/FINAL.pt',
-                      '/data15/data15_5/dexia/code_ctrans_ntl/checkpoints/cls3_newlabel1128/2023_12_04_BS8,,epochs200,optimSGD,seed0_cosLR1e-6/fold2/FINAL.pt',
-                      '/data15/data15_5/dexia/code_ctrans_ntl/checkpoints/cls3_newlabel1128/2023_12_03_BS8,,epochs200,optimSGD,seed0_cosLR1e-6/fold3/FINAL.pt',
-                      '/data15/data15_5/dexia/code_ctrans_ntl/checkpoints/cls3_newlabel1128/2023_12_03_BS8,,epochs200,optimSGD,seed0_cosLR1e-6/fold4/FINAL.pt',
-                      '/data15/data15_5/dexia/code_ctrans_ntl/checkpoints/cls3_newlabel1128/2023_12_03_BS8,,epochs200,optimSGD,seed0_cosLR1e-6/fold5/FINAL.pt'
+        ptpathlist = ['/fold1_tls.pt',
+                      '/fold2_tls.pt',
+                      '/fold3_tls.pt',
+                      '/fold4_tls.pt',
+                      '/fold5_tls.pt'
                       ]
 
         for ptpath in ptpathlist:
@@ -377,30 +348,20 @@ if __name__ == '__main__':
                 if 'module' in k:
                     k = k.replace('module.', '')
                 new_state_dict[k]=v
-            #model = create_model(args.model, False)
-
             model_dict = model.state_dict()
-            #print(model_dict)
-            #for k, v in model_dict.items():
-                #print(k)
             ignore = {k: v for k, v in new_state_dict.items() if k not in model_dict}
             print(ignore)
             weights = {k: v for k, v in new_state_dict.items() if k in model_dict}
-            #print(weights)
             model_dict.update(weights)
             model.load_state_dict(model_dict, True)
             model = model.to(device)
             model.eval()
             modellist.append(model)
-            #test_loader = 
             
     else:
         model = create_model(args.model, args.pretrain)
         model = model.to(device)
         modellist.append(model)
-        #train_loader, valid_loader, test_loader, weight_per_class = prepare_data(os.path.join(args.train_folder, str(args.foldn)), args.task, args.batch_size, args.stat)
-        #test_loader = ''
-    #modellist = [modellist[args.foldn-1]]
     print('torch.cuda.device_count:', torch.cuda.device_count())
     if torch.cuda.device_count() == 2:
         print(os.environ['CUDA_VISIBLE_DEVICES'])
@@ -409,10 +370,8 @@ if __name__ == '__main__':
         print(os.environ['CUDA_VISIBLE_DEVICES'])
         model = torch.nn.DataParallel(model, device_ids=[0, 1, 2, 3])
 
-    # cross entropy loss
     if loss_func == 'cross':
         weight_per_class = torch.Tensor(weight_per_class).to(device)
-        # criterion = nn.CrossEntropyLoss(weight=weight_per_class)
         criterion = nn.CrossEntropyLoss()
 
     if args.optimizer == 'SGD':
@@ -426,7 +385,7 @@ if __name__ == '__main__':
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs, eta_min=0.000001)
     
     resume_checkpoints = os.path.join(CONFIG.CHECK_POINT, 
-        '2022_11_04_'+"BS"+str(args.batch_size)+","+args.model+','+args.comment +
+        "BS"+str(args.batch_size)+","+args.model+','+args.comment +
                                ',epochs'+str(args.epochs)+",seed"+str(args.seed)+",fold"+str(args.foldn))
 
     if args.resume != 0:

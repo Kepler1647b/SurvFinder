@@ -53,17 +53,24 @@ DATA_ROOT_DIR/
 - /preprocessing/StainTools-master/main_staintools.py
 ## Training and evaluation of SurvFinder
 
-### Training and evaluation of MVNet
-Training
+### Training and evaluation of SegNet
+Training of TNTM
 ```
-python /ntl/train_ntl.py --Task 'lym' --TrainFolder "/train_folder"  --Comment 'comment' --Pretrain --FoldN  --BatchSize  --Epoch  --Resume 0 --Stat 'train'
+python /ntl/train_ntl.py --Task 'ntl' --TrainFolder "/train_folder"  --Comment 'comment' --Pretrain --FoldN  --BatchSize  --Epoch  --Resume 0 --Stat 'train'
 ```
-Evaluation
+Evaluation of TNTM
 ```
-python /ntl/train_ntl.py --Task 'lym' --TrainFolder "/test_folder"  --Comment 'comment'  --FoldN  --BatchSize  --Epoch  --Resume 0 --Stat 'test'
+python /ntl/train_ntl.py --Task 'ntl' --TrainFolder "/test_folder"  --Comment 'comment'  --FoldN  --BatchSize  --Epoch  --Resume 0 --Stat 'test'
 ```
 
-The trained checkpoints are saved in /ckpt, 5 files derived from 5-fold cross validation.
+Training of TLSM
+```
+python /tls3/train_lym3.py --Task 'lym' --TrainFolder "/train_folder"  --Comment 'comment' --Pretrain --FoldN  --BatchSize  --Epoch  --Resume 0 --Stat 'train'
+```
+Evaluation of TLSM
+```
+python /tls3/train_lym3.py --Task 'lym' --TrainFolder "/test_folder"  --Comment 'comment'  --FoldN  --BatchSize  --Epoch  --Resume 0 --Stat 'test'
+```
 
 
 
