@@ -55,6 +55,23 @@ def train(ini_file, logs_dir):
     config = read_config(ini_file)
     model = LateMMFAdv(config)
 
+    ptpath = '/fold%s_mvnet.pt' % foldn
+
+    state_dict = torch.load(ptpath) 
+    new_state_dict = OrderedDict()
+    for k, v in state_dict.items():
+        if 'module' in k:
+            k = k.replace('module.', '')
+        new_state_dict[k]=v
+    model_dict = model.state_dict()
+    ignore = {k: v for k, v in new_state_dict.items() if k not in model_dict}
+    print(ignore)
+    weights = {k: v for k, v in new_state_dict.items() if k in model_dict}
+    model_dict.update(weights)
+    model.load_state_dict(model_dict, True)
+    model = model.to(device)
+    model.eval()
+
     ptpath1 = '/cluster_%s.pth' % foldn
     ptpath2 = '/space_%s.pth' % foldn
     new_state_dict = OrderedDict()
@@ -95,91 +112,54 @@ def train(ini_file, logs_dir):
                                                  warmup_lr_init=1e-6)
 
     # constructs data loaders based on configuration
-    train_dataset = SurvivalDataset('./train%s_0122.csv' % foldn, selected_feat, is_train=True)
-    val_dataset = SurvivalDataset('./val%s_0122.csv' % foldn, selected_feat, is_train=False)
-    print('label_count:', train_dataset.label_count(), val_dataset.label_count())
-    train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=128, shuffle=True)
-    val_loader_inn = torch.utils.data.DataLoader(
-        val_dataset, batch_size=val_dataset.__len__())
+    test_dataset = SurvivalDataset('./test%s_0122.csv' % foldn, selected_feat, is_train=False)
+    test_dataset_liu = SurvivalDataset('/liu.csv', selected_feat, is_train=False)
+    test_dataset_crc = SurvivalDataset('/tj.csv', selected_feat, is_train=False)
+    print('label_count:', test_dataset.label_count())
+    test_loader_inn = torch.utils.data.DataLoader(
+        test_dataset, batch_size=test_dataset.__len__())
+    test_loader_liu = torch.utils.data.DataLoader(
+        test_dataset_liu, batch_size=test_dataset_liu.__len__())
+    test_loader_crc = torch.utils.data.DataLoader(
+        test_dataset_crc, batch_size=test_dataset_crc.__len__())
     # training
     
-    valloader_dic = {'inner': val_loader_inn}
-    for epoch in range(1, config['train']['epochs']+1):
-        scheduler.step(epoch-1)
-        lr = optimizer.param_groups[0]['lr']
+    testloader_dic = {'inner': test_loader_inn, 'liuyuan': test_loader_liu, 'CRC': test_loader_crc}
 
-        # train step
-        model.train()
-        e_list = []
-        risk_pred_list = []
-        for Xp, Xc, y, e, name in train_loader:
+        
+        
+    # valid step
+    model.eval()
+    
+    for test_ind in testloader_dic.keys():
+        print(test_ind, 'testing')
+        test_loader = testloader_dic[test_ind]
+
+        for Xp, Xc, y, e, name in test_loader:
             # makes predictions
             Xp = Xp.to(device)
             Xc = Xc.to(device)
             y = y.to(device)
             e = e.to(device)
 
-            risk_pred = model(Xp, Xc)
-            e = e.to(torch.int64)
-            e = e.flatten()
-            train_loss = criterion(risk_pred, e)
-            e = e.cpu().detach().numpy()
+            # makes predictions
+            with torch.no_grad():
+                risk_pred = model(Xp, Xc)
+                e = e.to(torch.int64) 
+                e = e.flatten()
+                valid_loss = criterion(risk_pred, e)
+                
+                # calculates c-index
+                e = e.cpu().detach().numpy()
+                risk_pred = risk_pred.cpu().detach().numpy()
+                valid_c = F.softmax(torch.tensor(risk_pred), dim=1).cpu().detach().numpy()
+                valid_c = roc_auc_score(e, valid_c[:, 1])
 
-            if len(e_list) == 0:
-                e_list = e
-                risk_pred_list = risk_pred.cpu().detach().numpy()
-            else:
-                e_list = np.concatenate((e_list, e))
-                risk_pred_list = np.concatenate((risk_pred_list, risk_pred.cpu().detach().numpy()))
 
-            optimizer.zero_grad()
-            train_loss.backward()
-            optimizer.step()
-
-        e_list = e_list.flatten()
-        e = e_list
-        train_c = F.softmax(torch.tensor(risk_pred_list), dim=1).cpu().detach().numpy()
-        train_c = roc_auc_score(e_list, train_c[:, 1])
-        
-        
-        # valid step
-        model.eval()
-        
-        for val_ind in valloader_dic.keys():
-            print(val_ind, 'testing')
-            val_loader = valloader_dic[val_ind]
-
-            for Xp, Xc, y, e, name in val_loader:
-                # makes predictions
-                Xp = Xp.to(device)
-                Xc = Xc.to(device)
-                y = y.to(device)
-                e = e.to(device)
-
-                # makes predictions
-                with torch.no_grad():
-                    risk_pred = model(Xp, Xc)
-                    e = e.to(torch.int64) 
-                    e = e.flatten()
-                    valid_loss = criterion(risk_pred, e)
-                    
-                    # calculates c-index
-                    e = e.cpu().detach().numpy()
-                    risk_pred = risk_pred.cpu().detach().numpy()
-                    valid_c = F.softmax(torch.tensor(risk_pred), dim=1).cpu().detach().numpy()
-                    valid_c = roc_auc_score(e, valid_c[:, 1])
-
-            if val_ind == 'inner':
-                print('Train: Epoch: {}, Loss: {:.6f}, C-index: {:.6f}, LR: {:.6f}'.format(
-                    epoch, train_loss.item(), train_c.item(), lr))
-                writer.add_scalar('Train/Loss', train_loss.item(), epoch)
-                writer.add_scalar('Train/C-index', train_c.item(), epoch)
-                writer.add_scalar('Train/LR', lr, epoch)
-            print('Valid: Epoch: {}, Loss: {:.6f}, C-index: {:.6f}'.format(
-                epoch, valid_loss.item(), valid_c.item()))
-            writer.add_scalar('Valid/{}/Loss'.format(val_ind), valid_loss.item(), epoch)
-            writer.add_scalar('Valid/{}/C-index'.format(val_ind), valid_c.item(), epoch)
+        print('Test: Loss: {:.6f}, C-index: {:.6f}'.format(
+            valid_loss.item(), valid_c.item()))
+        writer.add_scalar('Valid/{}/Loss'.format(test_ind), valid_loss.item())
+        writer.add_scalar('Valid/{}/C-index'.format(test_ind), valid_c.item())
 
     return 
 
