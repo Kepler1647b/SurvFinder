@@ -9,9 +9,9 @@ This code was developed and tested in the following settings.
 ### GPU
 - Nvidia GeForce RTX 2080 Ti
 ### Dependencies
-- Python (3.9.6)
-- Pytorch install = 1.9
-- torchvision (0.6)
+- Python (3.8.12)
+- Pytorch install = 1.10.1
+- torchvision (0.10.0)
 - CUDA (10.1)
 - openslide_python (1.1.1)
 - tensorboardX (2.4)
@@ -80,3 +80,15 @@ Evaluation
 ```
 python /surv/eval.py
 ```
+### Figure_Generation Code
+
+This folder contains R scripts used to generate the main figures in the manuscript.
+
+- `single_roc.R`: Generates ROC curves (e.g., Figure 2).
+- `confusion_matrix.R`: Generates confusion matrix plots (e.g., Figure 2).
+- `triple_roc.R`: Generates multiple ROC curves for comparison (e.g., Figure 3).
+- `kmcurv.R`: Plots Kaplan–Meier survival curves for risk groups (e.g., Figure 4).
+- `kmcurv_chemo.R`: Plots Kaplan–Meier curves stratified by adjuvant chemotherapy status (e.g., Figure 5).
+- `cox_analysis.R`: Generates forest plots for univariate and multivariate Cox regression analyses.
+
+Each script can be run independently with the appropriate input data. Please ensure that required R packages (e.g., `survival`, `survminer`, `ggplot2`) are installed.
