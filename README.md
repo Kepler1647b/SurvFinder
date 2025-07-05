@@ -71,7 +71,7 @@ Evaluation of TLSM
 ```
 python /tls3/train_lym3.py --Task 'lym' --TrainFolder "/test_folder"  --Comment 'comment'  --FoldN  --BatchSize  --Epoch  --Resume 0 --Stat 'test'
 ```
-
-
-
-
+### Training and evaluation of MVNet
+```
+python /surv/main.py
+```

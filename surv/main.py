@@ -28,7 +28,6 @@ import timm.scheduler
 import tensorboardX
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-#os.environ["WANDB_MODE"] = "offline"
 foldn = 1
 datatype = 'fusion'
 
@@ -56,8 +55,8 @@ def train(ini_file, logs_dir):
     config = read_config(ini_file)
     model = LateMMFAdv(config)
 
-    ptpath1 = '/home/21/zihan/Storage/lympho/code/DeepSurv.pytorch_dexia/ckpt_0330/fin_cluster_%s_epoch310_final.pth' % foldn
-    ptpath2 = '/home/21/zihan/Storage/lympho/code/DeepSurv.pytorch_dexia/ckpt_0330/fin_space_%s_epoch1000_final.pth' % foldn
+    ptpath1 = '/cluster_%s.pth' % foldn
+    ptpath2 = '/space_%s.pth' % foldn
     new_state_dict = OrderedDict()
     for ptpath in [ptpath1, ptpath2]:
         print(ptpath)
@@ -96,10 +95,10 @@ def train(ini_file, logs_dir):
                                                  warmup_lr_init=1e-6)
 
     # constructs data loaders based on configuration
-    train_dataset = SurvivalDataset('./splits_5_re/inner_strat_train_fold%s_0122.csv' % foldn, selected_feat, is_train=True)
-    test_dataset = SurvivalDataset('./splits_5_re/inner_strat_test_fold%s_0122.csv' % foldn, selected_feat, is_train=False)
-    test_dataset_liu = SurvivalDataset('/home/21/zihan/Storage/lympho/lympho_analysis/labelcsv_final/dfs_and_data_for_analysis_liuyuan_final.csv', selected_feat, is_train=False)
-    test_dataset_crc = SurvivalDataset('/home/21/zihan/Storage/lympho/lympho_analysis/labelcsv_final/dfs_and_data_for_analysis_tianjin_final.csv', selected_feat, is_train=False)
+    train_dataset = SurvivalDataset('./train%s_0122.csv' % foldn, selected_feat, is_train=True)
+    test_dataset = SurvivalDataset('./test%s_0122.csv' % foldn, selected_feat, is_train=False)
+    test_dataset_liu = SurvivalDataset('/liu.csv', selected_feat, is_train=False)
+    test_dataset_crc = SurvivalDataset('/tj.csv', selected_feat, is_train=False)
     print('label_count:', train_dataset.label_count(), test_dataset.label_count())
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=128, shuffle=True)
@@ -192,7 +191,7 @@ def train(ini_file, logs_dir):
 
 if __name__ == '__main__':
     # global settings
-    logs_dir = './ckpt_try'
+    logs_dir = './ckpt'
     models_dir = os.path.join(logs_dir, 'models')
     if not os.path.exists(models_dir):
         os.makedirs(models_dir)
