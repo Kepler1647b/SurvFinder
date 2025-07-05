@@ -82,7 +82,7 @@ python /surv/eval.py
 This folder contains R scripts used to generate the main figures in the manuscript.
 
 - `single_roc.R`: Generates ROC curves (e.g., Figure 2).
-- `confusion_matrix.R`: Generates confusion matrix plots (e.g., Figure 2).
+- `confusion_matrix.R`: Generates confusion matrix plots (e.g., Figure 2, 6).
 - `triple_roc.R`: Generates multiple ROC curves for comparison (e.g., Figure 3).
 - `kmcurv.R`: Plots Kaplan–Meier survival curves for risk groups (e.g., Figure 4).
 - `kmcurv_chemo.R`: Plots Kaplan–Meier curves stratified by adjuvant chemotherapy status (e.g., Figure 5).
