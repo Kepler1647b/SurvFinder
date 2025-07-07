@@ -44,7 +44,7 @@ pal <- wes_palette("Zissou1", 18, type = "continuous")
 library(forestplot)
 td = csv_inn_sur
 pFilter=1
-pfil = 0.1
+pfil = 0.05
 outResult=data.frame() 
 sigGenes=c("censor","time")
 sigG = c()
