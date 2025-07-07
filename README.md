@@ -89,3 +89,6 @@ This folder contains R scripts used to generate the main figures in the manuscri
 - `cox_analysis.R`: Generates forest plots for univariate and multivariate Cox regression analyses.
 
 Each script can be run independently with the appropriate input data. Please ensure that required R packages (e.g., `survival`, `survminer`, `ggplot2`) are installed.
+
+### Acknowledgement
+This repo benefits from [Deepsurv.pytorch](https://github.com/czifan/DeepSurv.pytorch) and [CLAM](https://github.com/mahmoodlab/CLAM). Thanks for their works.
