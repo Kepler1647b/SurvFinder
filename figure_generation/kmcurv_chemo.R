@@ -1,5 +1,5 @@
-library(survminer) # 加载包
-library(survival) # 加载包
+library(survminer) 
+library(survival) 
 
 library(wesanderson)
 library(showtext) 
@@ -40,16 +40,16 @@ time = csv$time
 censor = csv$censor
 chemo = csv$adj_after
 csv_ccc = data.frame('strat'=strat, 'time'=time, 'censor'=censor, 'chemo' = chemo)
-fit <- survfit(Surv(time,censor) ~ chemo,  # 创建生存对象 
-               data = csv_ccc) # 数据集来源
-aaa <- survdiff(Surv(time,censor) ~ chemo,  # 创建生存对象 
+fit <- survfit(Surv(time,censor) ~ chemo,  
+               data = csv_ccc)
+aaa <- survdiff(Surv(time,censor) ~ chemo,  
                data = csv_ccc)
 
 p_r = surv_pvalue(fit)$pval
 mystars <- ifelse(p_r <  .0001, '****', ifelse(p_r < .001, "***", ifelse(p_r < .01, "**", ifelse(p_r < .05, "*", "ns, "))))
 p_v = ifelse(p_r<0.0001, 'p < 0.0001', surv_pvalue(fit)$pval.txt)
 p_v = paste(mystars, p_v, sep = "")
-fit # 查看拟合曲线信息
+fit 
 summary(fit)
 p = ggsurvplot(fit, data = csv,
                size = 0.7, 
@@ -80,7 +80,7 @@ p = ggsurvplot(fit, data = csv,
   theme(plot.margin = unit(c(1,1,1,10),'mm'),plot.title = element_text(hjust = -0.4,size = 8, face = 'bold',family = 'Arial_a'), axis.title.y = element_text(hjust=-1,family = 'Arial_a', color = 'gray'),axis.text = element_text(hjust = 0, size = 7, color = 'black',family = 'Arial_a'))
   ) %++% coord_cartesian(xlim=c(0, 100))
 p$plot = p$plot + annotate("text", x = 20, y = 0.2, label = p_v, size = 7/.pt,family = 'Arial_a')+
-  scale_color_my(palette = "main")+# 添加P值
+  scale_color_my(palette = "main")+
 
   theme(axis.line = element_line(size = 0.5),legend.direction = 'horizontal',legend.position = 'top', legend.key.height=unit(0, "cm"), legend.spacing.y = unit(0, 'mm'),legend.text = element_text(size = 7), title = element_text(size = 7), axis.text.x = element_text(size = 7, colour = 'black'), axis.text.y = element_text(hjust = -3, size = 7, colour = 'black'), axis.title.x = element_text(size = 8, face = 'bold', vjust = 0), axis.title.y = element_text(size = 8, face = 'bold', vjust = 0))+
   scale_size_manual(values = c(0.1, 0.1))

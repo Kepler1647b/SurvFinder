@@ -8,7 +8,7 @@ library(wesanderson)
 library(showtext)
 library(extrafont)
 font_add("Arial_a", '/Library/Fonts/Arial Unicode.ttf')
-showtext_auto() # 后面字体均可以使用导入的字体
+showtext_auto() 
 pal <- wes_palette("Zissou1", 5, type = 'continuous')
 pal = c('#045D94', "#7FADC9", '#EBDAAD', "#F2CBAD", '#CF3C48')
 roc_with_ci <- function(obj) {
